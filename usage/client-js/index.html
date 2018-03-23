@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body { font-family: Tahoma, Geneva, sans-serif; }
+    </style>
+    <script src="colyseus.js"></script>
+  </head>
+  <body>
+    <strong>Messages</strong><br>
+
+    <form id="form">
+      <input type="text" id="input" value="" />
+      <input type="submit" value="send" />
+    </form>
+
+    <div id="messages"></div>
+
+    <script>
+      
+      var host = '';
+
+      if (window.document.location.origin === 'file://')
+        host = 'localhost';
+      else
+        host = window.document.location.host.replace(/:.*/, '');
+
+      var client = new Colyseus.Client('ws://' + host + ':8080');
+      var room;
+
+      function request () {
+          var http = new XMLHttpRequest();
+          var params = '{"lorem":"ipsum","name":"binny"}';
+          http.open("POST", "http://localhost:2657/something", true);
+
+          // Send the proper header information along with the request
+          // http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+          http.setRequestHeader("Content-type", "application/json");
+
+          // Call a function when the state changes.
+          http.onreadystatechange = function() {
+              if(http.readyState == 4 && http.status == 200) {
+                  alert(http.responseText);
+              }
+          }
+
+          http.send(params);
+      }
+
+      client.onOpen.add(function() {
+          console.log("onOpen")
+
+          room = client.join('chat');
+          room.onJoin.add(function() {
+              console.log(room.id);
+              console.log('joined!');
+          })
+
+          room.onLeave.add(function() {
+              console.log("LEFT ROOM", arguments);
+          });
+
+          room.onUpdate.add(function(data) {
+              console.log("chat update: ", data)
+          });
+      });
+
+      document.getElementById('form').onsubmit = function(e) {
+        e.preventDefault()
+
+        room.send(document.getElementById('input').value);
+
+        // room.send(document.getElementById('input').value);
+        document.getElementById('input').value = null
+      }
+    </script>
+
+  </body>
+</html>

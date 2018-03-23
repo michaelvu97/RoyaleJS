@@ -26,15 +26,10 @@ gameServer.register("chat", ChatRoom).
 app.use(express.static(__dirname));
 
 
-app.get("/something", (req, res) => {
+app.get("/", (req, res) => {
   console.log("something!", process.pid);
-  console.log("GET /something")
+  console.log("GET /")
   res.send("Hey!");
-});
-
-app.post("/something", (req, res) => {
-  console.log("POST /something")
-  res.json(req.body);
 });
 
 gameServer.onShutdown(() => {

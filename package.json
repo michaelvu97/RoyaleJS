@@ -18,7 +18,7 @@
   "scripts": {
     "prepublish": "tsc -d",
     "watch": "tsc -d -w",
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' usage/Server.ts",
+    "start": "nodemon usage/Server.ts",
     "test": "mocha --require ts-node/register test/**Test.ts",
     "typedoc": "typedoc --name Colyseus --mode file --out docs",
     "postinstall": "npm run -s donate",
