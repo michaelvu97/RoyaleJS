@@ -1,6 +1,13 @@
 import { Room } from "../src";
+import { Player } from "./Player";
+
+interface PlayerHash {
+  [playerId: number]: Player;
+}
 
 export class BattleRoom extends Room<any> {
+
+  playerList: PlayerHash = {};
 
   onInit (options) {
     this.setState({ messages: [] });
@@ -12,6 +19,12 @@ export class BattleRoom extends Room<any> {
     console.log("client.sessionId:", client.sessionId);
     console.log("with options", options);
     this.state.messages.push(`${ client.id } joined.`);
+    if (this.playerList.hasOwnProperty(client.id)) {
+      // Error, client already joined
+    } else {
+      this.playerList[client.id] = new Player(client.id);
+    }
+
   }
 
   onLeave (client) {
@@ -27,12 +40,12 @@ export class BattleRoom extends Room<any> {
 
     // Unpack the movement data.
     if (data.hasOwnProperty("move")) {
-      var move : number = data.move;
+      var moveInputOneHot : number = data.move;
 
-      var left   = (move & 1) != 0;
-      var up     = (move & 2) != 0;
-      var right  = (move & 4) != 0;
-      var down   = (move & 8) != 0;
+      var left   = (moveInputOneHot & 1) != 0;
+      var up     = (moveInputOneHot & 2) != 0;
+      var right  = (moveInputOneHot & 4) != 0;
+      var down   = (moveInputOneHot & 8) != 0;
 
       console.log(client.id, " left: ", left, " up: ", up, " right: ", right,
           " down: ", down);
