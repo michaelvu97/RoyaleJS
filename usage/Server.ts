@@ -3,7 +3,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 
 import { Server } from "../src/Server";
-import { ChatRoom } from "./ChatRoom";
+import { BattleRoom } from "./BattleRoom";
 
 const port = 8080;
 const endpoint = "localhost";
@@ -15,8 +15,8 @@ app.use(bodyParser.json());
 const server = http.createServer(app);
 const gameServer = new Server({ server: server });
 
-// Register ChatRoom as "chat"
-gameServer.register("chat", ChatRoom).
+// Register BattleRoom as "battle"
+gameServer.register("battle", BattleRoom).
   // demonstrating public events.
   on("create", (room) => console.log("room created!", room.roomId)).
   on("join", (room, client) => console.log("client", client.id, "joined", room.roomId)).

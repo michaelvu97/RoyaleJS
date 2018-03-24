@@ -1,6 +1,6 @@
 import { Room } from "../src";
 
-export class ChatRoom extends Room<any> {
+export class BattleRoom extends Room<any> {
 
   onInit (options) {
     this.setState({ messages: [] });
@@ -25,11 +25,23 @@ export class ChatRoom extends Room<any> {
       this.disconnect();
     }
 
-    console.log("ChatRoom:", client.id, data);
+    // Unpack the movement data.
+    if (data.hasOwnProperty("move")) {
+      var move : number = data.move;
+
+      var left   = (move & 1) != 0;
+      var up     = (move & 2) != 0;
+      var right  = (move & 4) != 0;
+      var down   = (move & 8) != 0;
+
+      console.log(client.id, " left: ", left, " up: ", up, " right: ", right,
+          " down: ", down);
+    }  
+
   }
 
   onDispose () {
-    console.log("Disposing ChatRoom...");
+    console.log("Disposing BattleRoom...");
 
     // perform async tasks to disconnect all players
     return new Promise((resolve, reject) => {

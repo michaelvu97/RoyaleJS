@@ -17,7 +17,7 @@
     <div id="messages"></div>
 
     <script>
-      
+
       var host = '';
 
       if (window.document.location.origin === 'file://')
@@ -50,7 +50,8 @@
       client.onOpen.add(function() {
           console.log("onOpen")
 
-          room = client.join('chat');
+          room = client.join('battle');
+
           room.onJoin.add(function() {
               console.log(room.id);
               console.log('joined!');
@@ -61,13 +62,78 @@
           });
 
           room.onUpdate.add(function(data) {
-              console.log("chat update: ", data)
+              console.log("update: ", data);
           });
+
       });
+
+      const KEY_CODES = {
+        a: 65,
+        d: 68,
+        w: 87,
+        s: 83
+      };
+
+      var inputController = {
+        left: false,
+        right: false,
+        up: false,
+        down: false
+      };
+
+      function handleKeyInput(e) {
+
+        var keyCode = (typeof e.which == "number") ? e.which : e.keyCode;
+
+        var isDown = e.type === "keydown";
+
+        var inputHasChanged = false;
+
+        switch (keyCode) {
+          case KEY_CODES.a:
+            if (inputHasChanged = (inputController.left !== isDown))
+              inputController.left = isDown;
+            break;
+          case KEY_CODES.d:
+            if (inputHasChanged = (inputController.right !== isDown))
+              inputController.right = isDown;
+            break;
+          case KEY_CODES.w:
+            if (inputHasChanged = (inputController.up !== isDown))
+              inputController.up = isDown;
+            break;
+          case KEY_CODES.s:
+            if (inputHasChanged = (inputController.down !== isDown))
+              inputController.down = isDown;
+            break;
+          default:
+            break;
+        }
+
+        if (inputHasChanged) {
+
+          // Optimizations to improve bandwidth and latency (One hot encoding)
+          // Note: this may increase server-side CPU load.
+
+          var serializedInputController = {};
+          serializedInputController.move |= inputController.left ? 1 : 0;
+          serializedInputController.move |= (inputController.up ? 1 : 0) << 1;
+          serializedInputController.move |= (inputController.right ? 1 : 0) << 2;
+          serializedInputController.move |= (inputController.down ? 1 : 0) << 3;
+
+          room.send(serializedInputController);
+          
+        }
+
+      }
+
+      document.onkeyup = handleKeyInput;
+      document.onkeydown = handleKeyInput;
 
       document.getElementById('form').onsubmit = function(e) {
         e.preventDefault()
 
+        // What should be done instead??
         room.send(document.getElementById('input').value);
 
         // room.send(document.getElementById('input').value);
