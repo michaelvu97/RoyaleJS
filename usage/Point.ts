@@ -44,4 +44,12 @@ export class Point {
         return this.SubtractVec(originVec).RotateOrigin(angle).AddVec(originVec);
     }
 
+    /*
+     * Modifiers (lowercase methods).
+     */
+    translate(v: Vector): void {
+        this.x += v.x;
+        this.y += v.y;
+    }
+
 }

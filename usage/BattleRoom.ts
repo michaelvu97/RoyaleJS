@@ -1,5 +1,6 @@
 import { Room } from "../src";
 import { Player } from "./Player";
+import { InputMovement } from "./InputMovement"
 
 interface PlayerHash {
   [playerId: number]: Player;
@@ -42,13 +43,17 @@ export class BattleRoom extends Room<any> {
     if (data.hasOwnProperty("move")) {
       var moveInputOneHot : number = data.move;
 
-      var left   = (moveInputOneHot & 1) != 0;
-      var up     = (moveInputOneHot & 2) != 0;
-      var right  = (moveInputOneHot & 4) != 0;
-      var down   = (moveInputOneHot & 8) != 0;
+      var inputData: InputMovement = {
+        left:  (moveInputOneHot & 1) != 0,
+        up:    (moveInputOneHot & 2) != 0,
+        right: (moveInputOneHot & 4) != 0,
+        down:  (moveInputOneHot & 8) != 0
+      }
 
-      console.log(client.id, " left: ", left, " up: ", up, " right: ", right,
-          " down: ", down);
+      // Update the player movement
+      var p = new Player(0, 0, 0); // Test
+      p.UpdateMovementInput(inputData);
+      
     }  
 
   }

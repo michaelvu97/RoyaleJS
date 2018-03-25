@@ -11,6 +11,11 @@ export class Vector {
     static readonly RIGHT: Vector = new Vector(1.0, 0.0);
     static readonly ZERO: Vector = new Vector(0.0, 0.0);
 
+    static readonly UPLEFT: Vector = Vector.LEFT.AddVec(Vector.UP).Normalize();
+    static readonly UPRIGHT: Vector = Vector.RIGHT.AddVec(Vector.UP).Normalize();
+    static readonly DOWNLEFT: Vector = Vector.LEFT.AddVec(Vector.DOWN).Normalize();
+    static readonly DOWNRIGHT: Vector = Vector.RIGHT.AddVec(Vector.DOWN).Normalize();
+
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
@@ -71,7 +76,23 @@ export class Vector {
         return Math.sqrt(this.Dot(this));
     }
 
+    MagLimit(limit: number): Vector {
+
+        if (limit === 0.0) {
+            return Vector.ZERO;
+        }
+
+        if (this.Magnitude() > limit) {
+            return this.Normalize().Scale(limit);
+        } else {
+            return new Vector(this.x, this.y);
+        }
+    }
+
     Normalize(): Vector {
+
+        console.log("debug: normalizing a vector");
+
         if (this.Magnitude() <= 0) {
             return this; // Do not normalize if this is a zero vector.
         }
