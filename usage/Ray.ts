@@ -1,5 +1,6 @@
 import { Point } from "./Point"
 import { Vector } from "./Vector"
+import { Collider } from "./Collider"
 
 export class Ray {
 
@@ -13,6 +14,16 @@ export class Ray {
 
     IsInvalidRay (): boolean {
         return this.direction.Compare(Vector.ZERO);
+    }
+
+    Cast(   colliders: Array<Collider>, 
+            forwardsOnly: boolean = true): Collider | null {
+        colliders.forEach(collider => {
+            if (collider.CheckRayCollision(this)) {
+                return true;
+            }
+        });
+        return null;
     }
 
 }
