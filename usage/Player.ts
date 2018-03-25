@@ -1,6 +1,6 @@
 import { Point } from "./Point"
 
-export class Player extends Point {
+export class Player extends Circle {
 
     static readonly MAX_SPEED : number = 1.0;
 

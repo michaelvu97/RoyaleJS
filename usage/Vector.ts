@@ -9,6 +9,7 @@ export class Vector {
     static readonly DOWN: Vector = new Vector(0.0, -1.0);
     static readonly LEFT: Vector = new Vector(-1.0, 0.0);
     static readonly RIGHT: Vector = new Vector(1.0, 0.0);
+    static readonly ZERO: Vector = new Vector(0.0, 0.0);
 
     constructor(x: number, y: number) {
         this.x = x;
@@ -76,6 +77,56 @@ export class Vector {
         }
 
         return this.Scale(1 / this.Magnitude());
+    }
+
+    /*
+     * Returns angle (radians) to vector b, in range (-PI, PI]
+     */
+    AngleTo(b: Vector): number {
+
+        if (b.Compare(Vector.ZERO) || this.Compare(Vector.ZERO)) {
+            // One of the vectors was invalid
+            console.warn("Vector:AngleTo: tried to use null vector");
+            return -1;
+        }
+
+        // Normalize both vectors
+        var c = this.Normalize();
+        var d = b.Normalize();
+
+        // First case: c = -d?
+        if (c.Scale(-1).Compare(d)) {
+            return Math.PI;
+        }
+
+        var acuteAngle = Math.asin(Math.abs(c.Cross(d)));
+
+        if (c.Dot(d) < 0) {
+            // Obtuse angle
+            acuteAngle += (Math.PI / 2) * (acuteAngle < 0 ? -1 : 1);
+        }
+
+        return acuteAngle;
+    }
+
+    // Returns true if two vectors are within tolerance distance of eachother
+    Compare(b: Vector, tolerance: number = 0.1, 
+            quickCheck: boolean = true): boolean {
+
+        if (tolerance < 0) {
+            console.warn("negative tolerance used in vec compare");
+            tolerance *= -1;
+        }
+
+        // Quick check
+        if (quickCheck && 
+                (   this.x - tolerance > b.x || this.x + tolerance < b.x ||
+                    this.y - tolerance > b.y || this.y + tolerance < b.x)) {
+            return false;
+        }
+
+        return this.SubtractVec(b).Magnitude() <= tolerance;
+
     }
 
 }
