@@ -6,10 +6,10 @@
     </style>
     <script src="colyseus.js"></script>
   </head>
-  <body>
+  <body style="margin:0px; padding: 0px">
 
 
-    <canvas id="GameScreen" width="600" height="600">
+    <canvas id="GameScreen" width="600" height="600" style="cursor:none">
     </canvas>
 
     <script>
@@ -166,6 +166,10 @@
       window.onload = init;
 
       function init() {
+
+        // Disable right click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
         setInterval(function() {
           if (inputController.left) {
             myLocation.x -= 3;
@@ -179,8 +183,55 @@
           if (inputController.down) {
             myLocation.y += 3;
           }
+
           draw();
         }, 10);
+      }
+
+
+      document.onmousemove = handleMouseMove;
+
+      document.onmousedown = handleMouseDown;
+
+      function handleMouseDown(event) {
+
+      }
+
+      var mouse = {
+        x: 0.0,
+        y: 0.0
+      }
+
+      var mouseRadius = 15.0;
+
+      // Player's precisino in degrees, [0,170]
+      var precisionRads = 0.03;
+      
+      function handleMouseMove(event) {
+
+        event = event || window.event;
+
+        if (event.pageX == null && event.clientX != null) {
+          var eventDoc = (event.target && event.target.ownerDocument)
+                         || document;
+          var doc = eventDoc.documentElement;
+          var body = eventDoc.body;
+
+          event.pageX = event.clientX + 
+              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+              (doc && doc.clientLeft || body && body.clientLeft || 0);
+          event.pageY = event.clientY +
+              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+              (doc && doc.clientTop  || body && body.clientTop  || 0 );
+
+          
+        }
+
+        mouse = {
+          x: event.pageX,
+          y: event.pageY
+        }
+
       }
 
       function draw() {
@@ -192,6 +243,7 @@
         
         // Draw bg
         ctx.fillStyle="#DDDDDD";
+        ctx.strokeStyle="#000000";
         ctx.fillRect(0, 0, 600, 600);
         ctx.fillStyle="#333333";
         ctx.lineWidth = 5;
@@ -249,8 +301,17 @@
             10.0, 0, 2 * Math.PI);
         ctx.fill();
 
-        console.log("draw finished");
+        // Draw the mouse position
+        
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.strokeStyle="#FF000022"
+        // Get the distance from the mouse to the player
+        var dist = Math.sqrt(Math.pow(mouse.x -  screenCentre.x, 2) + 
+            Math.pow(mouse.y - screenCentre.y, 2));
 
+        ctx.arc(mouse.x, mouse.y, dist * Math.tan(precisionRads), 0, 2 * Math.PI);
+        ctx.stroke();
       }
 
       // Temp
