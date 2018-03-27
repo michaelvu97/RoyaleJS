@@ -8,8 +8,11 @@
   </head>
   <body>
 
-    <script>
 
+    <canvas id="GameScreen" width="600" height="600">
+    </canvas>
+
+    <script>
       var host = '';
 
       if (window.document.location.origin === 'file://')
@@ -17,7 +20,9 @@
       else
         host = window.document.location.host.replace(/:.*/, '');
 
+      /*
       var client = new Colyseus.Client('ws://' + host + ':8080');
+      */
       var room;
 
       function request () {
@@ -39,8 +44,10 @@
           http.send(params);
       }
 
-      players = {}
+      var players = {};
+      var myLocation = {x: 100.0, y:100.0};
 
+      /*
       client.onOpen.add(function() {
           console.log("onOpen")
 
@@ -66,6 +73,7 @@
           })
 
       });
+      */
 
 
       const KEY_CODES = {
@@ -131,9 +139,123 @@
       document.onkeyup = handleKeyInput;
       document.onkeydown = handleKeyInput;
 
-    </script>
 
-    <canvas id="GameScreen" width="600" height="800">
-    </canvas>
+      // Draw
+      var canvas = document.getElementById("GameScreen");
+      var ctx = canvas.getContext("2d");
+
+      // Translates by negative me (origin to me)
+      function transform(T, point) {
+        
+        var x = point.x;
+        var y = point.y;
+        var z = point.hasOwnProperty('z') ? point.z : 1.0;
+
+        var s = {
+          x: T[0][0] * x + T[0][1] * y + T[0][2] * z,
+          y: T[1][0] * x + T[1][1] * y + T[1][2] * z,
+          z: T[2][0] * x + T[2][1] * y + T[2][2] * z
+        }
+
+        // Homogenous Z-regularization is disabled right now.
+
+        return s;
+
+      }
+
+      window.onload = init;
+
+      function init() {
+        setInterval(function() {
+          if (inputController.left) {
+            myLocation.x -= 3;
+          }
+          if (inputController.right) {
+            myLocation.x += 3;
+          }
+          if (inputController.up) {
+            myLocation.y -= 3;
+          }
+          if (inputController.down) {
+            myLocation.y += 3;
+          }
+          draw();
+        }, 10);
+      }
+
+      function draw() {
+
+        if (typeof canvas === "undefined" || typeof ctx === "undefined") {
+          canvas = document.getElementById("GameScreen");
+          ctx = canvas.getContext("2d");
+        }
+        
+        // Draw bg
+        ctx.fillStyle="#DDDDDD";
+        ctx.fillRect(0, 0, 600, 600);
+        ctx.fillStyle="#333333";
+        ctx.lineWidth = 5;
+
+        var lineStart = {
+          x: 40,
+          y: -200
+        }
+        var lineEnd = {
+          x: 500,
+          y: 200
+        }
+
+        var screenCentre = {
+          x: 300,
+          y: 300
+        }
+
+        var entityTest = {
+          x: 0,
+          y: 0
+        };
+
+        var worldToCamera = [
+          [1, 0, -myLocation.x + screenCentre.x],
+          [0, 1, -myLocation.y + screenCentre.y],
+          [0, 0, 1]
+        ];
+
+        var myTransformedLocation = transform(worldToCamera, myLocation);
+
+        var entityLocation = transform(worldToCamera, entityTest);
+
+        var lineStartCamera = transform(worldToCamera, lineStart);
+        var lineEndCamera = transform(worldToCamera, lineEnd);
+
+        ctx.beginPath();
+        ctx.moveTo(lineStartCamera.x, lineStartCamera.y);
+        ctx.lineTo(lineEndCamera.x, lineEndCamera.y);
+        ctx.stroke();
+
+        // Draw me
+
+        
+
+        ctx.fillStyle="#00FF00"
+        ctx.beginPath();
+        ctx.arc(myTransformedLocation.x, myTransformedLocation.y,
+            10.0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle="#0000FF";
+        ctx.arc(entityLocation.x, entityLocation.y,
+            10.0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        console.log("draw finished");
+
+      }
+
+      // Temp
+      // setInterval(function() {console.log("setting interval");draw()}, 10);
+
+    </script>
   </body>
 </html>
