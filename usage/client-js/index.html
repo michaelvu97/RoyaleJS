@@ -7,14 +7,6 @@
     <script src="colyseus.js"></script>
   </head>
   <body>
-    <strong>Messages</strong><br>
-
-    <form id="form">
-      <input type="text" id="input" value="" />
-      <input type="submit" value="send" />
-    </form>
-
-    <div id="messages"></div>
 
     <script>
 
@@ -47,6 +39,8 @@
           http.send(params);
       }
 
+      players = {}
+
       client.onOpen.add(function() {
           console.log("onOpen")
 
@@ -58,14 +52,21 @@
           })
 
           room.onLeave.add(function() {
+              console.trace()
               console.log("LEFT ROOM", arguments);
           });
 
-          room.onUpdate.add(function(data) {
-              console.log("update: ", data);
-          });
+          // room.onUpdate.add(function(data) {
+          //     console.log("update: ", data);
+          // });
+
+          room.listen("players/:id/:attr", (change) => {
+            console.log(change);
+            // TODO update the player list
+          })
 
       });
+
 
       const KEY_CODES = {
         a: 65,
@@ -130,16 +131,9 @@
       document.onkeyup = handleKeyInput;
       document.onkeydown = handleKeyInput;
 
-      document.getElementById('form').onsubmit = function(e) {
-        e.preventDefault()
-
-        // What should be done instead??
-        room.send(document.getElementById('input').value);
-
-        // room.send(document.getElementById('input').value);
-        document.getElementById('input').value = null
-      }
     </script>
 
+    <canvas id="GameScreen" width="600" height="800">
+    </canvas>
   </body>
 </html>

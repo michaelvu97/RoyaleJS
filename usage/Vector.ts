@@ -91,8 +91,6 @@ export class Vector {
 
     Normalize(): Vector {
 
-        console.log("debug: normalizing a vector");
-
         if (this.Magnitude() <= 0) {
             return this; // Do not normalize if this is a zero vector.
         }

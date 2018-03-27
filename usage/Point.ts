@@ -44,6 +44,13 @@ export class Point {
         return this.SubtractVec(originVec).RotateOrigin(angle).AddVec(originVec);
     }
 
+    Serialize() {
+        return {
+            x: this.x,
+            y: this.y
+        }
+    }
+
     /*
      * Modifiers (lowercase methods).
      */

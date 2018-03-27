@@ -1,17 +1,19 @@
 import { Room } from "../src";
 import { Player } from "./Player";
 import { InputMovement } from "./InputMovement"
+import { BattleState } from "./BattleState"
 
 interface PlayerHash {
   [playerId: number]: Player;
 }
 
-export class BattleRoom extends Room<any> {
-
-  playerList: PlayerHash = {};
+export class BattleRoom extends Room<BattleState> {
 
   onInit (options) {
-    this.setState({ messages: [] });
+    // this.setState({ playerList: {} });
+    this.setState({});
+    this.setSimulationInterval(() => {this.update(this)});
+    this.state.players = {};
   }
 
   onJoin (client, options) {
@@ -19,21 +21,22 @@ export class BattleRoom extends Room<any> {
     console.log("client.id:", client.id);
     console.log("client.sessionId:", client.sessionId);
     console.log("with options", options);
-    this.state.messages.push(`${ client.id } joined.`);
-    if (this.playerList.hasOwnProperty(client.id)) {
+    if (this.state.players.hasOwnProperty(client.id)) {
       // Error, client already joined
     } else {
-      this.playerList[client.id] = new Player(client.id);
+      this.state.players[client.id] = new Player(client.id);
     }
 
   }
 
   onLeave (client) {
-    this.state.messages.push(`${ client.id } left.`);
+    return new Promise((resolve, reject) => {
+      console.log("onLeave promise");
+      resolve();
+    })
   }
 
   onMessage (client, data) {
-    this.state.messages.push(data.message);
 
     if (data.message === "leave") {
       this.disconnect();
@@ -51,8 +54,7 @@ export class BattleRoom extends Room<any> {
       }
 
       // Update the player movement
-      var p = new Player(0, 0, 0); // Test
-      p.UpdateMovementInput(inputData);
+      this.state.players[client.id].UpdateMovementInput(inputData);
       
     }  
 
@@ -70,4 +72,11 @@ export class BattleRoom extends Room<any> {
     });
   }
 
+  update(room: BattleRoom) {
+
+    for (var playerId in room.state.players) {
+      room.state.players[playerId].Move();
+    }
+
+  }
 }

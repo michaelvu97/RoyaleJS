@@ -2,6 +2,7 @@ import { Point } from "./Point"
 import { CircleCollider } from "./CircleCollider"
 import { InputMovement } from "./InputMovement"
 import { Vector } from "./Vector"
+import { nonenumerable as nosync } from "nonenumerable";
 
 export class Player extends CircleCollider {
 
@@ -9,13 +10,15 @@ export class Player extends CircleCollider {
     static readonly ACCELERATION_COEFF:number = 0.2;
     static readonly PLAYER_RADIUS : number = 1.0;
 
+    @nosync
     clientId: number;
 
-    position: Point;
-
+    @nosync
     private _movementData :InputMovement;
 
+    @nosync
     velocity: Vector;
+    @nosync
     acceleration: Vector;
 
 
@@ -30,6 +33,7 @@ export class Player extends CircleCollider {
         }
 
         this.acceleration = Vector.ZERO;
+        this.velocity = Vector.ZERO;
     }
 
     UpdateMovementInput(data: InputMovement) {
@@ -85,6 +89,13 @@ export class Player extends CircleCollider {
         // TODO put collision checking in here.
         this.translate(this.velocity);
 
+    }
+
+    Serialize() {
+        return {
+            x: this.x,
+            y: this.y
+        };
     }
 
 }
