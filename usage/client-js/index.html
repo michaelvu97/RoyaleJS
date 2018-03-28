@@ -234,6 +234,41 @@
 
       }
 
+      function drawBG(context) {
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.fillStyle='#DDDDDD'; // Background Color
+        ctx.fillRect(0, 0, 600, 600);
+
+        var cellDimension = 100;
+
+        // Draw vertical lines
+        var x_offset = ((300 - myLocation.x) % cellDimension) - cellDimension / 2;
+        // debugger;
+        for (var x = x_offset; x < 600; x += cellDimension) {
+          ctx.beginPath();
+          ctx.strokeStyle = "#000000";
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 600);
+          ctx.stroke();
+          ctx.closePath();
+        } 
+
+        // Draw horizontal lines
+        var y_offset = ((300 - myLocation.y) % cellDimension) - cellDimension / 2;
+        // debugger;
+        for (var y = y_offset; y < 600; y += cellDimension) {
+          ctx.beginPath();
+          ctx.strokeStyle = "#000000";
+          ctx.moveTo(0, y);
+          ctx.lineTo(600, y);
+          ctx.stroke();
+          ctx.closePath();
+        } 
+
+
+      }
+
       function draw() {
 
         if (typeof canvas === "undefined" || typeof ctx === "undefined") {
@@ -242,9 +277,8 @@
         }
         
         // Draw bg
-        ctx.fillStyle="#DDDDDD";
-        ctx.strokeStyle="#000000";
-        ctx.fillRect(0, 0, 600, 600);
+        drawBG();
+        ctx.beginPath();
         ctx.fillStyle="#333333";
         ctx.lineWidth = 5;
 
