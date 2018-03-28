@@ -6,9 +6,12 @@ import { nonenumerable as nosync } from "nonenumerable";
 
 export class Player extends CircleCollider {
 
-    static readonly MAX_SPEED : number = 1.0;
-    static readonly ACCELERATION_COEFF:number = 0.2;
+    static readonly MIN_SPEED: number = 0.56;
+    static readonly MAX_SPEED : number = 2.5;
+    static readonly ACCELERATION_COEFF:number = 0.6;
     static readonly PLAYER_RADIUS : number = 1.0;
+    static readonly DRAG_COEFF: number = 0.7;
+
 
     @nosync
     clientId: number;
@@ -82,6 +85,26 @@ export class Player extends CircleCollider {
      * Called once per tick.
      */
     Move() {
+
+        var speed = this.velocity.Magnitude();
+        if (speed < Player.MIN_SPEED) {
+            this.velocity = Vector.ZERO;
+        }
+
+        var tempDrag = this.velocity.Normalize().Scale(-1 * Player.DRAG_COEFF);
+        var tempDragSpeed = tempDrag.Magnitude();
+        
+        if (!this._movementData.down && !this._movementData.up &&
+            !this._movementData.right && !this._movementData.left) {
+            if (speed > Player.MIN_SPEED) {
+                // Apply friction/drag
+                this.velocity = this.velocity.AddVec(tempDrag);
+            } else {
+                this.velocity = Vector.ZERO;
+
+            }
+        }
+        
         
         this.velocity = this.velocity.AddVec(this.acceleration)
                 .MagLimit(Player.MAX_SPEED);

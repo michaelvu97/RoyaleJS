@@ -20,10 +20,11 @@
       else
         host = window.document.location.host.replace(/:.*/, '');
 
-      /*
       var client = new Colyseus.Client('ws://' + host + ':8080');
-      */
       var room;
+
+      var myId = "";
+      var state = {};
 
       function request () {
           var http = new XMLHttpRequest();
@@ -37,17 +38,11 @@
           // Call a function when the state changes.
           http.onreadystatechange = function() {
               if(http.readyState == 4 && http.status == 200) {
-                  alert(http.responseText);
+                  alert("res:" + http.responseText);
               }
           }
-
-          http.send(params);
       }
 
-      var players = {};
-      var myLocation = {x: 100.0, y:100.0};
-
-      /*
       client.onOpen.add(function() {
           console.log("onOpen")
 
@@ -63,17 +58,24 @@
               console.log("LEFT ROOM", arguments);
           });
 
-          // room.onUpdate.add(function(data) {
-          //     console.log("update: ", data);
-          // });
+          room.onUpdate.add(function(data) {
+            state = data;
+          });
 
           room.listen("players/:id/:attr", (change) => {
-            console.log(change);
             // TODO update the player list
+            if (change.operation === "replace"){ 
+              var curr = state;
+              for (var i = 0; i < change.rawPath.length - 1; i++) {
+                curr = curr[change.rawPath[i]];
+              }
+
+              curr[change.rawPath[change.rawPath.length - 1]] = change.value;
+            }
           })
 
       });
-      */
+      
 
 
       const KEY_CODES = {
@@ -171,19 +173,6 @@
         document.addEventListener('contextmenu', event => event.preventDefault());
 
         setInterval(function() {
-          if (inputController.left) {
-            myLocation.x -= 3;
-          }
-          if (inputController.right) {
-            myLocation.x += 3;
-          }
-          if (inputController.up) {
-            myLocation.y -= 3;
-          }
-          if (inputController.down) {
-            myLocation.y += 3;
-          }
-
           draw();
         }, 10);
       }
@@ -234,7 +223,7 @@
 
       }
 
-      function drawBG(context) {
+      function drawBG(myLocation) {
         ctx.beginPath();
         ctx.lineWidth = 2;
         ctx.fillStyle='#DDDDDD'; // Background Color
@@ -244,7 +233,7 @@
 
         // Draw vertical lines
         var x_offset = ((300 - myLocation.x) % cellDimension) - cellDimension / 2;
-        // debugger;
+
         for (var x = x_offset; x < 600; x += cellDimension) {
           ctx.beginPath();
           ctx.strokeStyle = "#000000";
@@ -275,9 +264,19 @@
           canvas = document.getElementById("GameScreen");
           ctx = canvas.getContext("2d");
         }
-        
+
+        if (!state || !state.players || !state.players[client.id]) {
+          console.warn("state, players, or current player object not defined");
+          return;
+        }
+
+        var myLocation = {
+          x: state.players[client.id].x,
+          y: state.players[client.id].y, // conversion for canvas
+        }
+       
         // Draw bg
-        drawBG();
+        drawBG(myLocation);
         ctx.beginPath();
         ctx.fillStyle="#333333";
         ctx.lineWidth = 5;
@@ -300,6 +299,8 @@
           x: 0,
           y: 0
         };
+
+
 
         var worldToCamera = [
           [1, 0, -myLocation.x + screenCentre.x],
@@ -346,6 +347,7 @@
 
         ctx.arc(mouse.x, mouse.y, dist * Math.tan(precisionRads), 0, 2 * Math.PI);
         ctx.stroke();
+
       }
 
       // Temp
