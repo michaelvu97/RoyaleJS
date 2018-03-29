@@ -68,18 +68,12 @@
           });
 
           room.onUpdate.add(function(data) {
-            var temp = Date.now();
-            console.log("delta time=" + (temp - lastTime));
-            lastTime = temp;
             state = data;
             queueDraw();
           });
 
           room.listen("players/:id/:attr", (change) => {
             // TODO update the player list
-            var temp = Date.now();
-            console.log("delta time=" + (temp - lastTime));
-            lastTime = temp;
             if (change.operation === "replace"){ 
               var curr = state;
               for (var i = 0; i < change.rawPath.length - 1; i++) {
@@ -194,9 +188,6 @@
           draw();
         }, 10);
       }
-
-      var lastTime = Date.now();
-
 
       document.onmousemove = handleMouseMove;
 
