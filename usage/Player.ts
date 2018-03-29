@@ -9,7 +9,7 @@ export class Player extends CircleCollider {
     static readonly MIN_SPEED: number = 0.56;
     static readonly MAX_SPEED : number = 2.5;
     static readonly ACCELERATION_COEFF:number = 0.6;
-    static readonly PLAYER_RADIUS : number = 1.0;
+    static readonly PLAYER_RADIUS : number = 10.0;
     static readonly DRAG_COEFF: number = 0.7;
 
 

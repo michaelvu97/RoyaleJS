@@ -13,6 +13,15 @@
     </canvas>
 
     <script>
+      var requiresRedraw = true;
+
+      function queueDraw() {
+        if (!requiresRedraw) {
+          requiresRedraw = true;
+          draw();
+        }
+      }
+
       var host = '';
 
       if (window.document.location.origin === 'file://')
@@ -59,11 +68,18 @@
           });
 
           room.onUpdate.add(function(data) {
+            var temp = Date.now();
+            console.log("delta time=" + (temp - lastTime));
+            lastTime = temp;
             state = data;
+            queueDraw();
           });
 
           room.listen("players/:id/:attr", (change) => {
             // TODO update the player list
+            var temp = Date.now();
+            console.log("delta time=" + (temp - lastTime));
+            lastTime = temp;
             if (change.operation === "replace"){ 
               var curr = state;
               for (var i = 0; i < change.rawPath.length - 1; i++) {
@@ -72,6 +88,8 @@
 
               curr[change.rawPath[change.rawPath.length - 1]] = change.value;
             }
+
+            queueDraw();
           })
 
       });
@@ -177,6 +195,8 @@
         }, 10);
       }
 
+      var lastTime = Date.now();
+
 
       document.onmousemove = handleMouseMove;
 
@@ -193,7 +213,7 @@
 
       var mouseRadius = 15.0;
 
-      // Player's precisino in degrees, [0,170]
+      // Player's precision in degrees, [0,170]
       var precisionRads = 0.03;
       
       function handleMouseMove(event) {
@@ -221,6 +241,15 @@
           y: event.pageY
         }
 
+        queueDraw();
+
+      }
+
+      function worldToCamera(myLocation, screenCentre, point) {
+        return {
+          x: point.x - myLocation.x + screenCentre.x,
+          y: -point.y + myLocation.y + screenCentre.y
+        };
       }
 
       function drawBG(myLocation) {
@@ -230,30 +259,41 @@
         ctx.fillRect(0, 0, 600, 600);
 
         var cellDimension = 100;
+        var halfCellDimension = 50;
+
+        // TODO optimize this
+
+        for (var x = halfCellDimension; x < 1000 + halfCellDimension; x += cellDimension) {
+          for (var y = halfCellDimension; y < 1000 + halfCellDimension; y += cellDimension) {
+            ctx.beginPath();
+            ctx.strokeStyle= "#"
+            ctx.closePath();
+          }
+        }
 
         // Draw vertical lines
-        var x_offset = ((300 - myLocation.x) % cellDimension) - cellDimension / 2;
+        // var x_offset = ((300 - myLocation.x) % cellDimension) - cellDimension / 2;
 
-        for (var x = x_offset; x < 600; x += cellDimension) {
-          ctx.beginPath();
-          ctx.strokeStyle = "#000000";
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, 600);
-          ctx.stroke();
-          ctx.closePath();
-        } 
+        // for (var x = x_offset; x < 600; x += cellDimension) {
+        //   ctx.beginPath();
+        //   ctx.strokeStyle = "#000000";
+        //   ctx.moveTo(x, 0);
+        //   ctx.lineTo(x, 600);
+        //   ctx.stroke();
+        //   ctx.closePath();
+        // } 
 
-        // Draw horizontal lines
-        var y_offset = ((300 - myLocation.y) % cellDimension) - cellDimension / 2;
-        // debugger;
-        for (var y = y_offset; y < 600; y += cellDimension) {
-          ctx.beginPath();
-          ctx.strokeStyle = "#000000";
-          ctx.moveTo(0, y);
-          ctx.lineTo(600, y);
-          ctx.stroke();
-          ctx.closePath();
-        } 
+        // // Draw horizontal lines
+        // var y_offset = ((300 - myLocation.y) % cellDimension) - cellDimension / 2;
+        // // debugger;
+        // for (var y = y_offset; y < 600; y += cellDimension) {
+        //   ctx.beginPath();
+        //   ctx.strokeStyle = "#000000";
+        //   ctx.moveTo(0, y);
+        //   ctx.lineTo(600, y);
+        //   ctx.stroke();
+        //   ctx.closePath();
+        // } 
 
 
       }
@@ -274,12 +314,6 @@
           x: state.players[client.id].x,
           y: state.players[client.id].y, // conversion for canvas
         }
-       
-        // Draw bg
-        drawBG(myLocation);
-        ctx.beginPath();
-        ctx.fillStyle="#333333";
-        ctx.lineWidth = 5;
 
         var lineStart = {
           x: 40,
@@ -300,20 +334,47 @@
           y: 0
         };
 
-
-
-        var worldToCamera = [
+        var worldToCameraMat = [
           [1, 0, -myLocation.x + screenCentre.x],
-          [0, 1, -myLocation.y + screenCentre.y],
+          [0, -1, myLocation.y + screenCentre.y],
           [0, 0, 1]
         ];
+       
+        // Draw bg
+        drawBG(myLocation, worldToCameraMat);
+        ctx.beginPath();
+        ctx.fillStyle="#333333";
+        ctx.lineWidth = 5;
 
-        var myTransformedLocation = transform(worldToCamera, myLocation);
+        // TBH this is just screen centre
+        var myTransformedLocation = worldToCamera(myLocation, screenCentre, myLocation);
 
-        var entityLocation = transform(worldToCamera, entityTest);
+        
+        for (var player in state.players) {
+          if (player === client.id) {
+            ctx.fillStyle="#00FF00"    
+          } else {
+            ctx.fillStyle="#FF0000"
+          }
 
-        var lineStartCamera = transform(worldToCamera, lineStart);
-        var lineEndCamera = transform(worldToCamera, lineEnd);
+          var player = state.players[player];
+
+          var playerLocationCamera = worldToCamera(myLocation, screenCentre, player);
+          ctx.beginPath();
+          ctx.arc(playerLocationCamera.x, playerLocationCamera.y,
+              player.radius, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.closePath();  
+
+        }
+          
+
+        
+
+        var entityLocation = worldToCamera(myLocation, screenCentre, entityTest);
+
+        var lineStartCamera = worldToCamera(myLocation, screenCentre, lineStart);
+        var lineEndCamera = worldToCamera(myLocation, screenCentre, lineEnd);
 
         ctx.beginPath();
         ctx.moveTo(lineStartCamera.x, lineStartCamera.y);
@@ -329,6 +390,7 @@
         ctx.arc(myTransformedLocation.x, myTransformedLocation.y,
             10.0, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.closePath();
 
         ctx.beginPath();
         ctx.fillStyle="#0000FF";
